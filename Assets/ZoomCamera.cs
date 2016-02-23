@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 using System.Collections;
 
 public class ZoomCamera : MonoBehaviour {
@@ -15,6 +16,11 @@ public class ZoomCamera : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			SceneManager.LoadScene ("menu");
+		}
+
 		// スペースキーで初期位置に戻る
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			transform.position = defaultPosition;
