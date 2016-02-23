@@ -19,6 +19,7 @@ public class RotateSphere : MonoBehaviour {
 		// スペースキーで初期位置に戻る
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			transform.rotation = defaultRotation;
+			prevScrollSpeed = Vector3.zero;
 		}
 
 		// マウスの左押下開始で初期位置を取得する
