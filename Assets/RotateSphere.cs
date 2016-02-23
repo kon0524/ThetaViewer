@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using System.IO;
 using System.Collections;
 
 public class RotateSphere : MonoBehaviour {
@@ -13,7 +14,17 @@ public class RotateSphere : MonoBehaviour {
 		defaultRotation = transform.rotation;
 		Debug.Log ("defaultRotation : " + defaultRotation);
 
-		Debug.Log ("path = " + Menu.ImagePath);
+		byte[] imageBytes = null;
+		using (FileStream fs = new FileStream (Menu.ImagePath, FileMode.Open, FileAccess.Read)) {
+			using (BinaryReader br = new BinaryReader (fs)) {
+				imageBytes = br.ReadBytes ((int)br.BaseStream.Length);
+			}
+		}
+
+		if (imageBytes != null) {
+			Texture2D tex = GetComponent<Renderer> ().material.mainTexture as Texture2D;
+			tex.LoadImage (imageBytes);
+		}
 	}
 	
 	// Update is called once per frame
