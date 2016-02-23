@@ -16,9 +16,9 @@ public class ZoomCamera : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-
+		// ESCキーでアプリ終了
 		if (Input.GetKeyDown (KeyCode.Escape)) {
-			SceneManager.LoadScene ("menu");
+			Application.Quit ();
 		}
 
 		// スペースキーで初期位置に戻る

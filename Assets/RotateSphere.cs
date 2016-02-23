@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEditor;
 using System.IO;
 using System.Collections;
 
@@ -13,7 +14,7 @@ public class RotateSphere : MonoBehaviour {
 	void Start () {
 		defaultRotation = transform.rotation;
 		Debug.Log ("defaultRotation : " + defaultRotation);
-
+		#if false
 		byte[] imageBytes = null;
 		using (FileStream fs = new FileStream (Menu.ImagePath, FileMode.Open, FileAccess.Read)) {
 			using (BinaryReader br = new BinaryReader (fs)) {
@@ -25,6 +26,7 @@ public class RotateSphere : MonoBehaviour {
 			Texture2D tex = GetComponent<Renderer> ().material.mainTexture as Texture2D;
 			tex.LoadImage (imageBytes);
 		}
+		#endif
 	}
 	
 	// Update is called once per frame
@@ -67,5 +69,58 @@ public class RotateSphere : MonoBehaviour {
 		}
 
 		prevScrollSpeed = mouseMoveVol;
+	}
+
+	void OnGUI () {
+		dragAndDropEventHandler ();
+	}
+
+	/// <summary>
+	/// D&Dの監視
+	/// </summary>
+	private void dragAndDropEventHandler() {
+		switch (Event.current.type) {
+		case EventType.DragUpdated:
+			Debug.Log ("DragUpdated");
+			DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+			break;
+		case EventType.DragPerform:
+			Debug.Log ("DragPerform");
+			DragAndDrop.AcceptDrag ();
+			loadImage (DragAndDrop.paths [0]);
+			break;
+		default:
+			//DragAndDrop.visualMode = DragAndDropVisualMode.None;
+			break;
+		}
+	}
+
+	/// <summary>
+	/// 画像をロードする
+	/// </summary>
+	/// <param name="path">Path.</param>
+	private void loadImage(string path) {
+		// 入力値およびファイルチェック
+		if (string.IsNullOrEmpty (path) || !File.Exists (path))
+			return;
+		string ext = Path.GetExtension (path).ToUpper ();
+		if (ext != ".JPG" && ext != ".JPEG")
+			return;
+
+		// 読込み
+		byte[] imageBytes = null;
+		using (FileStream fs = new FileStream (path, FileMode.Open, FileAccess.Read)) {
+			using (BinaryReader br = new BinaryReader (fs)) {
+				imageBytes = br.ReadBytes ((int)br.BaseStream.Length);
+			}
+		}
+
+		// 表示
+		if (imageBytes != null) {
+			Texture2D tex = new Texture2D (1, 1);
+			tex.LoadImage (imageBytes);
+			Debug.Log (tex.width + " : " + tex.height);
+			GetComponent<Renderer> ().material.mainTexture = tex;
+		}
 	}
 }
