@@ -12,6 +12,8 @@ public class RotateSphere : MonoBehaviour {
 	void Start () {
 		defaultRotation = transform.rotation;
 		Debug.Log ("defaultRotation : " + defaultRotation);
+
+		Debug.Log ("path = " + Menu.ImagePath);
 	}
 	
 	// Update is called once per frame
