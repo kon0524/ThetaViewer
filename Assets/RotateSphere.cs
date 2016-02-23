@@ -36,9 +36,8 @@ public class RotateSphere : MonoBehaviour {
 		// マウスが移動していなければ以下の処理は行わない
 		if (mouseMoveVol == Vector3.zero) return;
 
-		// Y軸を回転する
-		transform.Rotate(0, mouseMoveVol.x * MOUSE_SENSITIVITY, 0);
-		Debug.Log("mouseMoveVol : " + mouseMoveVol);
-
+		// 回転する
+		transform.Rotate(0, mouseMoveVol.x * MOUSE_SENSITIVITY, 0, Space.Self);
+		transform.Rotate (-1 * mouseMoveVol.y * MOUSE_SENSITIVITY, 0, 0, Space.World);
 	}
 }
