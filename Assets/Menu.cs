@@ -42,10 +42,14 @@ public class Menu : MonoBehaviour {
 	void Start () {
         currentPath = GameObject.Find("CurrentPath").GetComponent<Text>();
         GameObject.Find("UpButton").GetComponent<Button>().onClick.AddListener(() => {
-            currentPath.text = Directory.GetParent(currentPath.text).FullName;
-            ViewerInfo.CurrentPath = Directory.GetParent(currentPath.text).FullName;
-            updateFiles(currentPath.text);
-            updateButtons();
+            DirectoryInfo di = Directory.GetParent(currentPath.text);
+            if (di != null)
+            {
+                currentPath.text = di.FullName;
+                ViewerInfo.CurrentPath = di.FullName;
+                updateFiles(currentPath.text);
+                updateButtons();
+            }
         });
         Debug.Log("Menu Scene Open. path=" + ViewerInfo.CurrentPath);
 
