@@ -96,6 +96,10 @@ public class Menu : MonoBehaviour {
 			createButtonObject (f, ButtonType.Image, height);
 			height -= 30;
 		}
+
+		GameObject content = GameObject.Find("ContentPanel");
+		RectTransform rect = content.GetComponent<RectTransform> ();
+		rect.sizeDelta = new Vector2 (rect.sizeDelta.x, -1 * height);
 	}
 
 	/// <summary>
