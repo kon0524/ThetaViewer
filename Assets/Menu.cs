@@ -19,11 +19,6 @@ public class Menu : MonoBehaviour {
 	private string myPicture;
 
 	/// <summary>
-	/// 現在のパス
-	/// </summary>
-	private string current;
-
-	/// <summary>
 	/// ファイル一覧
 	/// </summary>
 	private string[] files;
@@ -36,13 +31,34 @@ public class Menu : MonoBehaviour {
 	/// <summary>
 	/// ボタン種別
 	/// </summary>
-	private enum ButtonType { Image, Directory, Up }
+	private enum ButtonType { Image, Directory}
+
+    /// <summary>
+    /// カレントパス
+    /// </summary>
+    private Text currentPath;
 
 	// Use this for initialization
 	void Start () {
-		myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
-		current = myPicture;
-		updateFiles (myPicture);
+        currentPath = GameObject.Find("CurrentPath").GetComponent<Text>();
+        GameObject.Find("UpButton").GetComponent<Button>().onClick.AddListener(() => {
+            currentPath.text = Directory.GetParent(currentPath.text).FullName;
+            ViewerInfo.CurrentPath = Directory.GetParent(currentPath.text).FullName;
+            updateFiles(currentPath.text);
+            updateButtons();
+        });
+        Debug.Log("Menu Scene Open. path=" + ViewerInfo.CurrentPath);
+
+        myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
+        if (string.IsNullOrEmpty(ViewerInfo.CurrentPath))
+        {
+            currentPath.text = myPicture;
+            ViewerInfo.CurrentPath = myPicture;
+        } else
+        {
+            currentPath.text = ViewerInfo.CurrentPath;
+        }
+        updateFiles (currentPath.text);
 		updateButtons ();
 	}
 	
@@ -80,9 +96,6 @@ public class Menu : MonoBehaviour {
 
 		removeAllButton ();
 
-		createButtonObject (current, ButtonType.Up, height);
-		height -= 30;
-
 		foreach (string d in directories) {
 			createButtonObject (d, ButtonType.Directory, height);
 			height -= 30;
@@ -112,7 +125,7 @@ public class Menu : MonoBehaviour {
 
 		// テキスト
 		Text text = buttonObj.GetComponentInChildren<Text>();
-		text.text = (type != ButtonType.Up) ? Path.GetFileName (path) : "Up";
+        text.text = Path.GetFileName(path);
 		text.alignment = TextAnchor.MiddleLeft;
 
 		// ボタン
@@ -123,23 +136,15 @@ public class Menu : MonoBehaviour {
 				Debug.Log (SelectedImage + " is Selected!");
 				SceneManager.LoadScene("main");
 			});
-		} else if (type == ButtonType.Directory) {
-			button.onClick.AddListener (() => {
-				current = path;
-				Debug.Log (current + " directory change.");
-				updateFiles(current);
-				updateButtons();
-			});
 		} else {
 			button.onClick.AddListener (() => {
-				Debug.Log("Up" + button.name);
-				current = Directory.GetParent(path).FullName;
-				Debug.Log (current + " directory change.");
-				updateFiles(current);
+				currentPath.text = path;
+                ViewerInfo.CurrentPath = path;
+                updateFiles(path);
 				updateButtons();
 			});
 		}
-		button.transform.SetParent (content.transform);
+        button.transform.SetParent (content.transform);
 		RectTransform btnRectTrans = button.GetComponent<RectTransform> ();
 		btnRectTrans.localPosition = new Vector2 (0, offset);
 
