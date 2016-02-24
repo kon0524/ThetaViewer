@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class Menu : MonoBehaviour {
 
@@ -32,70 +33,29 @@ public class Menu : MonoBehaviour {
 	/// </summary>
 	private string[] directories;
 
+	/// <summary>
+	/// ボタン種別
+	/// </summary>
+	private enum ButtonType { Image, Directory, Up }
+
 	// Use this for initialization
 	void Start () {
 		myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
 		current = myPicture;
 		updateFiles (myPicture);
-
-		// Buttonのプレハブを取得
-		GameObject prefab = (GameObject)Resources.Load ("Button");
-		// ContentPanelの取得
-		GameObject content = GameObject.Find("ContentPanel");
-
-		// ボタン生成
-		float height = 0;
-		foreach (string f in files) {
-			GameObject button = Instantiate (prefab) as GameObject;
-			Text btnText = button.transform.FindChild ("Text").GetComponent<Text> ();
-			btnText.text = Path.GetFileName(f);
-			Button b = button.GetComponent<Button> ();
-			b.name = f;
-			b.onClick.AddListener (() => {
-				SelectedImage = b.name;
-				Debug.Log(SelectedImage + " is Selected!");
-			});
-			button.transform.SetParent (content.transform);
-			RectTransform btnRectTrans = button.GetComponent<RectTransform> ();
-			btnRectTrans.localPosition = new Vector2 (0, height);
-			height -= 30;
-		}
+		updateButtons ();
 	}
 	
 	// Update is called once per frame
 	void Update () {
-	
-	}
-
-	void OnGUI () {
-		#if false
-		float y = 0;
-
-		// 一つ上に戻る
-		if (GUI.Button (new Rect (0, y, 300, 30), "modoru")) {
-			Debug.Log ("modoru");
-			current = Directory.GetParent (current).FullName;
-			updateFiles (current);
-		}
-		y += 31.0f;
-
-		// ディレクトリ一覧
-		foreach (string d in directories) {
-			if (GUI.Button (new Rect (0, y, 300, 30), Path.GetFileName(d))) {
-				Debug.Log (d + " is Selected!");
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			GameObject content = GameObject.Find("ContentPanel");
+			Button[] button = content.GetComponentsInChildren<Button> ();
+			foreach (Button b in button) {
+				b.gameObject.SetActive (false);
+				GameObject.Destroy (b);
 			}
-			y += 31.0f;
 		}
-
-		// JPEGファイル一覧
-		foreach (string f in files) {
-			if (GUI.Button (new Rect (0, y, 300, 30), Path.GetFileName (f))) {
-				SelectedImage = f;
-				Debug.Log (f + " is Selected!");
-			}
-			y += 31.0f;
-		}
-		#endif
 	}
 
 	/// <summary>
@@ -114,5 +74,88 @@ public class Menu : MonoBehaviour {
 		files = list.ToArray ();
 
 		directories = Directory.GetDirectories (path);
+	}
+
+	/// <summary>
+	/// ボタン群を生成します
+	/// </summary>
+	private void updateButtons() {
+		float height = 0;
+
+		removeAllButton ();
+
+		createButtonObject (current, ButtonType.Up, height);
+		height -= 30;
+
+		foreach (string d in directories) {
+			createButtonObject (d, ButtonType.Directory, height);
+			height -= 30;
+		}
+
+		foreach (string f in files) {
+			createButtonObject (f, ButtonType.Image, height);
+			height -= 30;
+		}
+	}
+
+	/// <summary>
+	/// 一つのボタンを生成します
+	/// </summary>
+	/// <returns>The button object.</returns>
+	/// <param name="path">Path.</param>
+	/// <param name="type">Type.</param>
+	/// <param name="offset">Offset.</param>
+	private GameObject createButtonObject(string path, ButtonType type, float offset) {
+		GameObject content = GameObject.Find("ContentPanel");
+		GameObject prefab = (GameObject)Resources.Load ("Button");
+		GameObject buttonObj = Instantiate (prefab) as GameObject;
+
+		// テキスト
+		Text text = buttonObj.GetComponentInChildren<Text>();
+		text.text = (type != ButtonType.Up) ? Path.GetFileName (path) : "Up";
+		text.alignment = TextAnchor.MiddleLeft;
+
+		// ボタン
+		Button button = buttonObj.GetComponent<Button> ();
+		button.name = path;
+		if (type == ButtonType.Image) {
+			button.onClick.AddListener (() => {
+				SelectedImage = button.name;
+				Debug.Log (SelectedImage + " is Selected!");
+				SceneManager.LoadScene("main");
+			});
+		} else if (type == ButtonType.Directory) {
+			button.onClick.AddListener (() => {
+				current = button.name;
+				Debug.Log (current + " directory change.");
+				updateFiles(current);
+				updateButtons();
+			});
+		} else {
+			button.onClick.AddListener (() => {
+				Debug.Log("Up" + button.name);
+				current = Directory.GetParent(button.name).FullName;
+				Debug.Log (current + " directory change.");
+				updateFiles(current);
+				updateButtons();
+			});
+		}
+		button.transform.SetParent (content.transform);
+		RectTransform btnRectTrans = button.GetComponent<RectTransform> ();
+		btnRectTrans.localPosition = new Vector2 (0, offset);
+
+		return buttonObj;
+	}
+
+	/// <summary>
+	/// すべてのボタンを消す
+	/// </summary>
+	private void removeAllButton() {
+		GameObject content = GameObject.Find("ContentPanel");
+		Button[] button = content.GetComponentsInChildren<Button> ();
+		foreach (Button b in button) {
+			b.gameObject.SetActive (false);
+			GameObject.Destroy (b);
+		}
 	}
 }

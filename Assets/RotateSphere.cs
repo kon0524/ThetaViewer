@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.SceneManagement;
 //using UnityEditor;
 using System.IO;
 using System.Collections;
@@ -14,10 +15,17 @@ public class RotateSphere : MonoBehaviour {
 	void Start () {
 		defaultRotation = transform.rotation;
 		Debug.Log ("defaultRotation : " + defaultRotation);
+
+		loadImage (Menu.SelectedImage);
 	}
 	
 	// Update is called once per frame
 	void Update () {
+		// ESCキーで戻る
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			SceneManager.LoadScene ("menu");
+		}
+
 		// スペースキーで初期位置に戻る
 		if (Input.GetKeyDown (KeyCode.Space)) {
 			transform.rotation = defaultRotation;
