@@ -43,11 +43,18 @@ public class Menu : MonoBehaviour {
 		// ContentPanelの取得
 		GameObject content = GameObject.Find("ContentPanel");
 
+		// ボタン生成
 		float height = 0;
 		foreach (string f in files) {
 			GameObject button = Instantiate (prefab) as GameObject;
 			Text btnText = button.transform.FindChild ("Text").GetComponent<Text> ();
-			btnText.text = f;
+			btnText.text = Path.GetFileName(f);
+			Button b = button.GetComponent<Button> ();
+			b.name = f;
+			b.onClick.AddListener (() => {
+				SelectedImage = b.name;
+				Debug.Log(SelectedImage + " is Selected!");
+			});
 			button.transform.SetParent (content.transform);
 			RectTransform btnRectTrans = button.GetComponent<RectTransform> ();
 			btnRectTrans.localPosition = new Vector2 (0, height);
