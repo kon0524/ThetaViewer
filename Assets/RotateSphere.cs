@@ -1,5 +1,5 @@
 ﻿using UnityEngine;
-using UnityEditor;
+//using UnityEditor;
 using System.IO;
 using System.Collections;
 
@@ -14,19 +14,6 @@ public class RotateSphere : MonoBehaviour {
 	void Start () {
 		defaultRotation = transform.rotation;
 		Debug.Log ("defaultRotation : " + defaultRotation);
-		#if false
-		byte[] imageBytes = null;
-		using (FileStream fs = new FileStream (Menu.ImagePath, FileMode.Open, FileAccess.Read)) {
-			using (BinaryReader br = new BinaryReader (fs)) {
-				imageBytes = br.ReadBytes ((int)br.BaseStream.Length);
-			}
-		}
-
-		if (imageBytes != null) {
-			Texture2D tex = GetComponent<Renderer> ().material.mainTexture as Texture2D;
-			tex.LoadImage (imageBytes);
-		}
-		#endif
 	}
 	
 	// Update is called once per frame
@@ -79,15 +66,16 @@ public class RotateSphere : MonoBehaviour {
 	/// D&Dの監視
 	/// </summary>
 	private void dragAndDropEventHandler() {
-		switch (Event.current.type) {
+		Event cur = Event.current;
+		switch (cur.type) {
 		case EventType.DragUpdated:
 			Debug.Log ("DragUpdated");
-			DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
+			//DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
 			break;
 		case EventType.DragPerform:
 			Debug.Log ("DragPerform");
-			DragAndDrop.AcceptDrag ();
-			loadImage (DragAndDrop.paths [0]);
+			//DragAndDrop.AcceptDrag ();
+			//loadImage (DragAndDrop.paths [0]);
 			break;
 		default:
 			//DragAndDrop.visualMode = DragAndDropVisualMode.None;

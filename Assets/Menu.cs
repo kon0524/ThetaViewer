@@ -1,15 +1,58 @@
 ﻿using UnityEngine;
-using UnityEngine.SceneManagement;
-using UnityEditor;
+using System;
+using System.IO;
 using System.Collections;
+using System.Collections.Generic;
+using UnityEngine.UI;
 
 public class Menu : MonoBehaviour {
 
-	public static string ImagePath = null;
+	/// <summary>
+	/// 選択した画像
+	/// </summary>
+	public static string SelectedImage;
+
+	/// <summary>
+	/// MyPictureのパス
+	/// </summary>
+	private string myPicture;
+
+	/// <summary>
+	/// 現在のパス
+	/// </summary>
+	private string current;
+
+	/// <summary>
+	/// ファイル一覧
+	/// </summary>
+	private string[] files;
+
+	/// <summary>
+	/// ディレクトリ一覧
+	/// </summary>
+	private string[] directories;
 
 	// Use this for initialization
 	void Start () {
-	
+		myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
+		current = myPicture;
+		updateFiles (myPicture);
+
+		// Buttonのプレハブを取得
+		GameObject prefab = (GameObject)Resources.Load ("Button");
+		// ContentPanelの取得
+		GameObject content = GameObject.Find("ContentPanel");
+
+		float height = 0;
+		foreach (string f in files) {
+			GameObject button = Instantiate (prefab) as GameObject;
+			Text btnText = button.transform.FindChild ("Text").GetComponent<Text> ();
+			btnText.text = f;
+			button.transform.SetParent (content.transform);
+			RectTransform btnRectTrans = button.GetComponent<RectTransform> ();
+			btnRectTrans.localPosition = new Vector2 (0, height);
+			height -= 30;
+		}
 	}
 	
 	// Update is called once per frame
@@ -17,36 +60,52 @@ public class Menu : MonoBehaviour {
 	
 	}
 
-	void OnGUI() {
-		GUI.Label (new Rect (0, 0, 100, 30), "Hello");
+	void OnGUI () {
+		#if false
+		float y = 0;
 
-		if (GUI.Button (new Rect (0, 30, 100, 50), "START")) {
-			SceneManager.LoadScene ("main");
+		// 一つ上に戻る
+		if (GUI.Button (new Rect (0, y, 300, 30), "modoru")) {
+			Debug.Log ("modoru");
+			current = Directory.GetParent (current).FullName;
+			updateFiles (current);
+		}
+		y += 31.0f;
+
+		// ディレクトリ一覧
+		foreach (string d in directories) {
+			if (GUI.Button (new Rect (0, y, 300, 30), Path.GetFileName(d))) {
+				Debug.Log (d + " is Selected!");
+			}
+			y += 31.0f;
 		}
 
-		if (GUI.Button (new Rect (0, 80, 100, 50), "QUIT")) {
-			Debug.Log ("Quit");
-			Application.Quit ();
+		// JPEGファイル一覧
+		foreach (string f in files) {
+			if (GUI.Button (new Rect (0, y, 300, 30), Path.GetFileName (f))) {
+				SelectedImage = f;
+				Debug.Log (f + " is Selected!");
+			}
+			y += 31.0f;
 		}
+		#endif
+	}
 
-		GUI.Box (new Rect (0, 130, 200, 100), "Drop Here!");
-
-		string path = null;
-		switch (Event.current.type) {
-		case EventType.DragUpdated:
-			DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-			break;
-		case EventType.DragPerform:
-			DragAndDrop.AcceptDrag ();
-			path = DragAndDrop.paths [0];
-			break;
-		default:
-			break;
+	/// <summary>
+	/// 指定したパスのJPEGファイルでfilesを更新します
+	/// </summary>
+	/// <param name="path">Path.</param>
+	private void updateFiles(string path) {
+		List<string> list = new List<string> ();
+		string[] temp = Directory.GetFiles (path);
+		foreach (string f in temp) {
+			string ext = Path.GetExtension (f).ToUpper ();
+			if (ext == ".JPG" || ext == ".JPEG") {
+				list.Add (f);
+			}
 		}
+		files = list.ToArray ();
 
-		if (!string.IsNullOrEmpty (path)) {
-			ImagePath = path;
-			SceneManager.LoadScene ("main");
-		}
+		directories = Directory.GetDirectories (path);
 	}
 }
