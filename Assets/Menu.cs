@@ -48,13 +48,9 @@ public class Menu : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-		if (Input.GetKeyDown (KeyCode.Space)) {
-			GameObject content = GameObject.Find("ContentPanel");
-			Button[] button = content.GetComponentsInChildren<Button> ();
-			foreach (Button b in button) {
-				b.gameObject.SetActive (false);
-				GameObject.Destroy (b);
-			}
+		// ESCキーでアプリ終了
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Application.Quit ();
 		}
 	}
 

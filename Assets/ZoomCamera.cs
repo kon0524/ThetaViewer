@@ -18,7 +18,7 @@ public class ZoomCamera : MonoBehaviour {
 	void Update () {
 		// ESCキーでアプリ終了
 		if (Input.GetKeyDown (KeyCode.Escape)) {
-			Application.Quit ();
+			//Application.Quit ();
 		}
 
 		// スペースキーで初期位置に戻る
