@@ -117,16 +117,15 @@ public class Menu : MonoBehaviour {
 
 		// ボタン
 		Button button = buttonObj.GetComponent<Button> ();
-		button.name = path;
 		if (type == ButtonType.Image) {
 			button.onClick.AddListener (() => {
-				SelectedImage = button.name;
+				SelectedImage = path;
 				Debug.Log (SelectedImage + " is Selected!");
 				SceneManager.LoadScene("main");
 			});
 		} else if (type == ButtonType.Directory) {
 			button.onClick.AddListener (() => {
-				current = button.name;
+				current = path;
 				Debug.Log (current + " directory change.");
 				updateFiles(current);
 				updateButtons();
@@ -134,7 +133,7 @@ public class Menu : MonoBehaviour {
 		} else {
 			button.onClick.AddListener (() => {
 				Debug.Log("Up" + button.name);
-				current = Directory.GetParent(button.name).FullName;
+				current = Directory.GetParent(path).FullName;
 				Debug.Log (current + " directory change.");
 				updateFiles(current);
 				updateButtons();
