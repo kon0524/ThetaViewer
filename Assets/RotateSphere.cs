@@ -71,31 +71,6 @@ public class RotateSphere : MonoBehaviour {
 		prevScrollSpeed = mouseMoveVol;
 	}
 
-	void OnGUI () {
-		dragAndDropEventHandler ();
-	}
-
-	/// <summary>
-	/// D&Dの監視
-	/// </summary>
-	private void dragAndDropEventHandler() {
-		Event cur = Event.current;
-		switch (cur.type) {
-		case EventType.DragUpdated:
-			Debug.Log ("DragUpdated");
-			//DragAndDrop.visualMode = DragAndDropVisualMode.Copy;
-			break;
-		case EventType.DragPerform:
-			Debug.Log ("DragPerform");
-			//DragAndDrop.AcceptDrag ();
-			//loadImage (DragAndDrop.paths [0]);
-			break;
-		default:
-			//DragAndDrop.visualMode = DragAndDropVisualMode.None;
-			break;
-		}
-	}
-
 	/// <summary>
 	/// 画像をロードする
 	/// </summary>
