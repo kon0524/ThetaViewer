@@ -16,7 +16,12 @@ public class RotateSphere : MonoBehaviour {
 		defaultRotation = transform.rotation;
 		Debug.Log ("defaultRotation : " + defaultRotation);
 
-		loadImage (Menu.SelectedImage);
+		if (Menu.DownloadedImage != null) {
+			loadImage (Menu.DownloadedImage);
+			Menu.DownloadedImage = null;
+		} else {
+			loadImage (Menu.SelectedImage);
+		}
 	}
 	
 	// Update is called once per frame
@@ -115,6 +120,19 @@ public class RotateSphere : MonoBehaviour {
 		if (imageBytes != null) {
 			Texture2D tex = new Texture2D (1, 1);
 			tex.LoadImage (imageBytes);
+			Debug.Log (tex.width + " : " + tex.height);
+			GetComponent<Renderer> ().material.mainTexture = tex;
+		}
+	}
+
+	/// <summary>
+	/// 画面をロードする
+	/// </summary>
+	/// <param name="data">Data.</param>
+	private void loadImage(byte[] data) {
+		if (data != null) {
+			Texture2D tex = new Texture2D (1, 1);
+			tex.LoadImage (data);
 			Debug.Log (tex.width + " : " + tex.height);
 			GetComponent<Renderer> ().material.mainTexture = tex;
 		}

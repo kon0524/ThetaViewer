@@ -14,6 +14,11 @@ public class Menu : MonoBehaviour {
 	public static string SelectedImage;
 
 	/// <summary>
+	/// ダウンロードしたイメージ
+	/// </summary>
+	public static byte[] DownloadedImage;
+
+	/// <summary>
 	/// MyPictureのパス
 	/// </summary>
 	private string myPicture;
@@ -47,6 +52,8 @@ public class Menu : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
+		GameObject.Find ("TakePicture").GetComponent<Button> ()
+			.onClick.AddListener (new UnityEngine.Events.UnityAction (takePicture));
         currentPath = GameObject.Find("CurrentPath").GetComponent<Text>();
         GameObject.Find("UpButton").GetComponent<Button>().onClick.AddListener(() => {
             DirectoryInfo di = Directory.GetParent(currentPath.text);
@@ -68,7 +75,6 @@ public class Menu : MonoBehaviour {
 		// 論理ドライブの一覧を取得する
 		drives = Directory.GetLogicalDrives();
 		foreach (string d in drives) {
-			Debug.Log (d);
 			driveSelect.options.Add (new Dropdown.OptionData (d));
 		}
 
@@ -82,7 +88,6 @@ public class Menu : MonoBehaviour {
 					driveSelect.value = i;
 					Text label = driveSelect.GetComponentInChildren<Text> ();
 					label.text = Path.GetPathRoot (myPicture);
-					Debug.Log (label);
 					break;
 				}
 			}
@@ -95,7 +100,6 @@ public class Menu : MonoBehaviour {
 					driveSelect.value = i;
 					Text label = driveSelect.GetComponentInChildren<Text> ();
 					label.text = Path.GetPathRoot (ViewerInfo.CurrentPath);
-					Debug.Log (label);
 					break;
 				}
 			}
@@ -110,6 +114,12 @@ public class Menu : MonoBehaviour {
 			updateFiles (currentPath.text);
 			updateButtons ();
 		});
+
+		#if false
+		ThetaAccess.GetInfo ();
+		Debug.Log (ThetaAccess.GetFingerPrint ());
+		ThetaAccess.TakePicture ();
+		#endif
 	}
 	
 	// Update is called once per frame
@@ -211,5 +221,21 @@ public class Menu : MonoBehaviour {
 			b.gameObject.SetActive (false);
 			GameObject.Destroy (b);
 		}
+	}
+
+	private void takePicture() {
+		Debug.Log ("take picture");
+
+		string finger = ThetaAccess.GetFingerPrint ();
+		ThetaAccess.TakePicture ();
+		while (true) {
+			System.Threading.Thread.Sleep (100);
+			string newFinger = ThetaAccess.GetFingerPrint ();
+			if (finger != newFinger)
+				break;
+		}
+
+		DownloadedImage = ThetaAccess.GetLatestImage ();
+		SceneManager.LoadScene ("main");
 	}
 }
