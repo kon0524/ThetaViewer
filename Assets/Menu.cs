@@ -79,6 +79,8 @@ public class Menu : MonoBehaviour {
 			.onClick.AddListener (new UnityEngine.Events.UnityAction (takePicture));
 		GameObject.Find ("UpButton").GetComponent<Button> ()
 			.onClick.AddListener (new UnityEngine.Events.UnityAction (upDirectory));
+		GameObject.Find ("Sharing").GetComponent<Dropdown> ()
+			.onValueChanged.AddListener (new UnityEngine.Events.UnityAction<int> (sharingChange));
 	}
 	
 	// Update is called once per frame
@@ -222,5 +224,15 @@ public class Menu : MonoBehaviour {
 		currentPath.text = ViewerInfo.CurrentPath = drives[value];
 		updateFiles (currentPath.text);
 		updateButtons ();
+	}
+
+	/// <summary>
+	/// 共有状態変更時の処理
+	/// </summary>
+	/// <param name="value">Value.</param>
+	private void sharingChange(int value) {
+		Debug.Log ("Sharing : " + value);
+		Server server = Server.GetInstance ();
+		server.Start ();
 	}
 }
