@@ -19,11 +19,6 @@ public class Menu : MonoBehaviour {
 	public static byte[] DownloadedImage;
 
 	/// <summary>
-	/// MyPictureのパス
-	/// </summary>
-	private string myPicture;
-
-	/// <summary>
 	/// ファイル一覧
 	/// </summary>
 	private string[] files;
@@ -38,12 +33,10 @@ public class Menu : MonoBehaviour {
 	/// </summary>
 	private enum ButtonType { Image, Directory}
 
-	private string[] drives;
-
 	/// <summary>
-	/// ドライブ選択
+	/// 論理ドライブ一覧
 	/// </summary>
-	private Dropdown driveSelect;
+	private string[] drives;
 
     /// <summary>
     /// カレントパス
@@ -52,74 +45,40 @@ public class Menu : MonoBehaviour {
 
 	// Use this for initialization
 	void Start () {
-		GameObject.Find ("TakePicture").GetComponent<Button> ()
-			.onClick.AddListener (new UnityEngine.Events.UnityAction (takePicture));
-        currentPath = GameObject.Find("CurrentPath").GetComponent<Text>();
-        GameObject.Find("UpButton").GetComponent<Button>().onClick.AddListener(() => {
-            DirectoryInfo di = Directory.GetParent(currentPath.text);
-            if (di != null)
-            {
-                currentPath.text = di.FullName;
-                ViewerInfo.CurrentPath = di.FullName;
-                updateFiles(currentPath.text);
-                updateButtons();
-            }
-        });
-		driveSelect = GameObject.Find ("SelectDrive").GetComponent<Dropdown> ();
-		driveSelect.options.Clear ();
-
-		Debug.Log (driveSelect);
-
-        Debug.Log("Menu Scene Open. path=" + ViewerInfo.CurrentPath);
-
-		// 論理ドライブの一覧を取得する
-		drives = Directory.GetLogicalDrives();
-		foreach (string d in drives) {
-			driveSelect.options.Add (new Dropdown.OptionData (d));
+		// 現在のパスを設定する
+		currentPath = GameObject.Find("CurrentPath").GetComponent<Text> ();
+		if (string.IsNullOrEmpty (ViewerInfo.CurrentPath)) {
+			// デフォルトはMyPictureとする
+			string myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
+			currentPath.text = ViewerInfo.CurrentPath = myPicture;
+		} else {
+			// 前回のパスを設定する
+			currentPath.text = ViewerInfo.CurrentPath;
 		}
 
-        myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
-        if (string.IsNullOrEmpty(ViewerInfo.CurrentPath))
-        {
-            currentPath.text = myPicture;
-            ViewerInfo.CurrentPath = myPicture;
-			for (int i = 0; i < drives.Length; i++) {
-				if (drives [i] == Path.GetPathRoot (myPicture)) {
-					driveSelect.value = i;
-					Text label = driveSelect.GetComponentInChildren<Text> ();
-					label.text = Path.GetPathRoot (myPicture);
-					break;
-				}
+		// ドライブ選択を初期化する
+		Dropdown driveSelect = GameObject.Find ("SelectDrive").GetComponent<Dropdown> ();
+		driveSelect.options.Clear ();
+		drives = Directory.GetLogicalDrives();
+		for (int i = 0; i < drives.Length; i++) {
+			driveSelect.options.Add (new Dropdown.OptionData (drives[i]));
+			if (drives [i] == Path.GetPathRoot (currentPath.text)) {
+				driveSelect.value = i;
+				Text label = driveSelect.GetComponentInChildren<Text> ();
+				label.text = Path.GetPathRoot (currentPath.text);
 			}
-			Debug.Log (Path.GetPathRoot (myPicture));
-        } else
-        {
-            currentPath.text = ViewerInfo.CurrentPath;
-			for (int i = 0; i < drives.Length; i++) {
-				if (drives [i] == Path.GetPathRoot (ViewerInfo.CurrentPath)) {
-					driveSelect.value = i;
-					Text label = driveSelect.GetComponentInChildren<Text> ();
-					label.text = Path.GetPathRoot (ViewerInfo.CurrentPath);
-					break;
-				}
-			}
-        }
-        updateFiles (currentPath.text);
+		}
+		driveSelect.onValueChanged.AddListener (new UnityEngine.Events.UnityAction<int> (driveChange));
+
+		// パスのファイル・ディレクトリ一覧を取得してボタンを描画する
+		updateFiles (currentPath.text);
 		updateButtons ();
 
-		driveSelect.onValueChanged.AddListener ((index) => {
-			Debug.Log("value change : " + index);
-			currentPath.text = drives[index];
-			ViewerInfo.CurrentPath = drives[index];
-			updateFiles (currentPath.text);
-			updateButtons ();
-		});
-
-		#if false
-		ThetaAccess.GetInfo ();
-		Debug.Log (ThetaAccess.GetFingerPrint ());
-		ThetaAccess.TakePicture ();
-		#endif
+		// 各種ボタンにイベントを設定する
+		GameObject.Find ("TakePicture").GetComponent<Button> ()
+			.onClick.AddListener (new UnityEngine.Events.UnityAction (takePicture));
+		GameObject.Find ("UpButton").GetComponent<Button> ()
+			.onClick.AddListener (new UnityEngine.Events.UnityAction (upDirectory));
 	}
 	
 	// Update is called once per frame
@@ -223,6 +182,9 @@ public class Menu : MonoBehaviour {
 		}
 	}
 
+	/// <summary>
+	/// TakePictureボタン押下時の処理
+	/// </summary>
 	private void takePicture() {
 		Debug.Log ("take picture");
 
@@ -237,5 +199,28 @@ public class Menu : MonoBehaviour {
 
 		DownloadedImage = ThetaAccess.GetLatestImage ();
 		SceneManager.LoadScene ("main");
+	}
+
+	/// <summary>
+	/// Upボタン押下時の処理
+	/// </summary>
+	private void upDirectory() {
+		DirectoryInfo di = Directory.GetParent(currentPath.text);
+		if (di != null)
+		{
+			currentPath.text = ViewerInfo.CurrentPath = di.FullName;
+			updateFiles(currentPath.text);
+			updateButtons();
+		}
+	}
+
+	/// <summary>
+	/// ドライブ変更時の処理
+	/// </summary>
+	/// <param name="value">Value.</param>
+	private void driveChange(int value) {
+		currentPath.text = ViewerInfo.CurrentPath = drives[value];
+		updateFiles (currentPath.text);
+		updateButtons ();
 	}
 }
