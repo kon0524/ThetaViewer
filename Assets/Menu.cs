@@ -33,6 +33,13 @@ public class Menu : MonoBehaviour {
 	/// </summary>
 	private enum ButtonType { Image, Directory}
 
+	private string[] drives;
+
+	/// <summary>
+	/// ドライブ選択
+	/// </summary>
+	private Dropdown driveSelect;
+
     /// <summary>
     /// カレントパス
     /// </summary>
@@ -51,19 +58,58 @@ public class Menu : MonoBehaviour {
                 updateButtons();
             }
         });
+		driveSelect = GameObject.Find ("SelectDrive").GetComponent<Dropdown> ();
+		driveSelect.options.Clear ();
+
+		Debug.Log (driveSelect);
+
         Debug.Log("Menu Scene Open. path=" + ViewerInfo.CurrentPath);
+
+		// 論理ドライブの一覧を取得する
+		drives = Directory.GetLogicalDrives();
+		foreach (string d in drives) {
+			Debug.Log (d);
+			driveSelect.options.Add (new Dropdown.OptionData (d));
+		}
 
         myPicture = Environment.GetFolderPath (Environment.SpecialFolder.MyPictures);
         if (string.IsNullOrEmpty(ViewerInfo.CurrentPath))
         {
             currentPath.text = myPicture;
             ViewerInfo.CurrentPath = myPicture;
+			for (int i = 0; i < drives.Length; i++) {
+				if (drives [i] == Path.GetPathRoot (myPicture)) {
+					driveSelect.value = i;
+					Text label = driveSelect.GetComponentInChildren<Text> ();
+					label.text = Path.GetPathRoot (myPicture);
+					Debug.Log (label);
+					break;
+				}
+			}
+			Debug.Log (Path.GetPathRoot (myPicture));
         } else
         {
             currentPath.text = ViewerInfo.CurrentPath;
+			for (int i = 0; i < drives.Length; i++) {
+				if (drives [i] == Path.GetPathRoot (ViewerInfo.CurrentPath)) {
+					driveSelect.value = i;
+					Text label = driveSelect.GetComponentInChildren<Text> ();
+					label.text = Path.GetPathRoot (ViewerInfo.CurrentPath);
+					Debug.Log (label);
+					break;
+				}
+			}
         }
         updateFiles (currentPath.text);
 		updateButtons ();
+
+		driveSelect.onValueChanged.AddListener ((index) => {
+			Debug.Log("value change : " + index);
+			currentPath.text = drives[index];
+			ViewerInfo.CurrentPath = drives[index];
+			updateFiles (currentPath.text);
+			updateButtons ();
+		});
 	}
 	
 	// Update is called once per frame
