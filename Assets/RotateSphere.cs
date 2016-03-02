@@ -1,27 +1,25 @@
 ﻿using UnityEngine;
 using UnityEngine.SceneManagement;
-//using UnityEditor;
 using System.IO;
 using System.Collections;
 
 public class RotateSphere : MonoBehaviour {
 
 	private const float MOUSE_SENSITIVITY = 0.1f;
-	private Quaternion defaultRotation;
 	private Vector3 prevMousePos;
 	private Vector3 prevScrollSpeed;
+	private Zenith.PitchRollInfo info;
 
 	// Use this for initialization
 	void Start () {
-		defaultRotation = transform.rotation;
-		Debug.Log ("defaultRotation : " + defaultRotation);
-
 		if (Menu.DownloadedImage != null) {
 			loadImage (Menu.DownloadedImage);
 			Menu.DownloadedImage = null;
 		} else {
 			loadImage (Menu.SelectedImage);
 		}
+		Debug.Log ("Pitch : " + info.Pitch + " ,Roll : " + info.Roll);
+		transform.Rotate (-1 * info.Roll, 0, info.Pitch);
 	}
 	
 	// Update is called once per frame
@@ -30,45 +28,6 @@ public class RotateSphere : MonoBehaviour {
 		if (Input.GetKeyDown (KeyCode.Escape)) {
 			SceneManager.LoadScene ("menu");
 		}
-
-		// スペースキーで初期位置に戻る
-		if (Input.GetKeyDown (KeyCode.Space)) {
-			transform.rotation = defaultRotation;
-			prevScrollSpeed = Vector3.zero;
-		}
-
-		// マウスの左押下開始で初期位置を取得する
-		if (Input.GetMouseButtonDown (0)) {
-			prevMousePos = Input.mousePosition;
-			prevScrollSpeed = Vector3.zero;
-		}
-
-		// カメラ位置によって感度を調整する
-		float cameraZoom = Camera.main.transform.position.z;
-		float sensitivity = MOUSE_SENSITIVITY + (-1 * cameraZoom * 0.1f);
-
-		// マウスの左ボタン未押下では慣性で回す
-		if (!Input.GetMouseButton (0)) {
-			prevScrollSpeed *= 0.95f;
-			//Debug.Log (prevScrollSpeed);
-			transform.Rotate(0, prevScrollSpeed.x * sensitivity, 0, Space.Self);
-			transform.Rotate (-1 * prevScrollSpeed.y * sensitivity, 0, 0, Space.World);
-			return;
-		}
-
-		// 以下はドラッグ中.マウスの移動量を計算する
-		Vector3 curMousePos = Input.mousePosition;
-		Vector3 mouseMoveVol = curMousePos - prevMousePos;
-		prevMousePos = curMousePos;
-
-		// マウスが移動していなければ以下の処理は行わない
-		if (mouseMoveVol != Vector3.zero) {
-			// 回転する
-			transform.Rotate (0, mouseMoveVol.x * sensitivity, 0, Space.Self);
-			transform.Rotate (-1 * mouseMoveVol.y * sensitivity, 0, 0, Space.World);
-		}
-
-		prevScrollSpeed = mouseMoveVol;
 	}
 
 	/// <summary>
@@ -92,12 +51,7 @@ public class RotateSphere : MonoBehaviour {
 		}
 
 		// 表示
-		if (imageBytes != null) {
-			Texture2D tex = new Texture2D (1, 1);
-			tex.LoadImage (imageBytes);
-			Debug.Log (tex.width + " : " + tex.height);
-			GetComponent<Renderer> ().material.mainTexture = tex;
-		}
+		loadImage(imageBytes);
 	}
 
 	/// <summary>
@@ -106,6 +60,7 @@ public class RotateSphere : MonoBehaviour {
 	/// <param name="data">Data.</param>
 	private void loadImage(byte[] data) {
 		if (data != null) {
+			info = Zenith.GetInfo (data);
 			Texture2D tex = new Texture2D (1, 1);
 			tex.LoadImage (data);
 			Debug.Log (tex.width + " : " + tex.height);
