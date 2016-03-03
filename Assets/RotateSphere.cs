@@ -19,7 +19,9 @@ public class RotateSphere : MonoBehaviour {
 			loadImage (Menu.SelectedImage);
 		}
 		Debug.Log ("Pitch : " + info.Pitch + " ,Roll : " + info.Roll);
-		transform.Rotate (-1 * info.Roll, 0, info.Pitch);
+		//transform.Rotate (-1 * info.Roll, 0, info.Pitch);
+		transform.Rotate(Vector3.left, info.Roll, Space.World);
+		transform.Rotate (Vector3.forward, info.Pitch, Space.World);
 	}
 	
 	// Update is called once per frame
